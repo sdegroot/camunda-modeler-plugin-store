@@ -1,0 +1,10 @@
+[
+  {
+    "type": "npm",
+    "id": "camunda-modeler-autosave-plugin"
+  },
+  {
+    "type": "npm",
+    "id": "bpmn-js-token-simulation-plugin"
+  }
+]
