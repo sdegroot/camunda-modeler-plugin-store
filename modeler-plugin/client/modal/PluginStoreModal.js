@@ -1,11 +1,38 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from "camunda-modeler-plugin-helpers/react";
+import React, { useState, useEffect } from "camunda-modeler-plugin-helpers/react";
 import { Modal } from "camunda-modeler-plugin-helpers/components";
+
+import { listPlugins, removePlugin } from "../client";
 
 // polyfill upcoming structural components
 const Title = Modal.Title || (({ children }) => <h2>{children}</h2>);
 const Body = Modal.Body || (({ children }) => <div>{children}</div>);
 const Footer = Modal.Footer || (({ children }) => <div>{children}</div>);
+
+function PluginEntries({ plugins, uninstall }) {
+
+  if (plugins && plugins.plugins) {
+    return <>
+      {plugins.plugins.map((plugin, index) => {
+        return (
+          <tr>
+            <td>
+              <a href={plugin.homepage}>{plugin.name}@{plugin.version}</a>
+            </td>
+            <td>Installed</td>
+            <td>
+              <button onClick={() => uninstall(plugin.name)} class="btn btn-secondary">
+                Uninstall
+              </button>
+            </td>
+          </tr>
+        );
+      })}
+    </>
+  }
+
+  return <></>;
+}
 
 // we can even use hooks to render into the application
 export default function PluginStoreModal({ initValues, onClose }) {
@@ -13,8 +40,19 @@ export default function PluginStoreModal({ initValues, onClose }) {
   const [interval, setAutoSaveInterval] = useState(initValues.interval);
 
   const [searchValue, setSearchValue] = useState("");
+  const [plugins, setPlugins] = useState({});
+
+  useEffect(() => {
+    listPlugins().then(setPlugins);
+  }, [])
+
 
   const onSubmit = () => onClose({ enabled, interval });
+
+  const uninstall = async (pluginName) => {
+    await removePlugin(pluginName);
+    await listPlugins().then(setPlugins);
+  }
 
   return (
     <Modal onClose={onClose}>
@@ -36,17 +74,7 @@ export default function PluginStoreModal({ initValues, onClose }) {
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>
-                  <a href="www.google.com">Plugin Store</a>
-                </td>
-                <td>Installed</td>
-                <td>
-                  <button onClick={() => onClose()} class="btn btn-secondary">
-                    Uninstall
-                  </button>
-                </td>
-              </tr>
+              <PluginEntries plugins={plugins} uninstall={uninstall}></PluginEntries>
             </tbody>
           </table>
         </div>
@@ -63,6 +91,6 @@ export default function PluginStoreModal({ initValues, onClose }) {
           </button>
         </div>
       </Footer>
-    </Modal>
+    </Modal >
   );
 }

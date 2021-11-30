@@ -6,6 +6,7 @@ import React, {
 import { Fill } from "camunda-modeler-plugin-helpers/components";
 
 import PluginStoreModal from "./modal/PluginStoreModal";
+import * as client from './client'
 
 const defaultState = {
   enabled: false,
@@ -33,8 +34,10 @@ export default class PluginStorePlugin extends PureComponent {
      * - displayNotification: show notifications inside the application
      */
     const { config, subscribe } = this.props;
+    
+    this.props.config.backend.on("plugin:store-plugin:open", (_, options) => {
+      client.start(options);
 
-    this.props.config.backend.on("plugin:store-plugin:open", () => {
       this.setState({
         configOpen: true,
       });

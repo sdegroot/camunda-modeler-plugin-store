@@ -7,7 +7,7 @@ module.exports = function (electronApp, menuState) {
         return true;
       },
       action: function () {
-        electronApp.mainWindow.webContents.send("plugin:store-plugin:open");
+        electronApp.mainWindow.webContents.send("plugin:store-plugin:open", { port: 1337 });
       },
     },
   ];
