@@ -1,3 +1,5 @@
+const server = require('./server/server');
+
 module.exports = function (electronApp, menuState) {
   return [
     {
@@ -7,6 +9,7 @@ module.exports = function (electronApp, menuState) {
         return true;
       },
       action: function () {
+        server.initServer(electronApp);
         electronApp.mainWindow.webContents.send("plugin:store-plugin:open", { port: 1337 });
       },
     },

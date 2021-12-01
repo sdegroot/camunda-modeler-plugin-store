@@ -2,32 +2,6 @@
 const WebSocket = require("ws");
 const plugins = require('./plugins');
 
-const wss = new WebSocket.WebSocketServer({
-    port: 1337,
-    perMessageDeflate: false
-});
-
-
-wss.on('connection', function connection(ws) {
-    ws.on('message', function message(dataString) {
-        const data = JSON.parse(dataString);
-        console.log('received: %s', data);
-
-        if (data.type == 'request' && operations[data.operation]) {
-            const operation = operations[data.operation];
-            operation(ws, data);
-            return;
-        }
-
-        ws.send(JSON.stringify({
-            type: 'error',
-            ref: data.ref,
-            message: `Unknown operation '${data.type}:${data.operation}'`
-        }));
-
-    });
-});
-
 const operations = {
     listPlugins: async (ws, data) => {
         let pluginList = await plugins.listPlugins();
@@ -68,3 +42,46 @@ const operations = {
     },
 
 };
+
+
+let wss;
+let pluginDir;
+function initServer(app) {
+    if (wss) {
+        // already initialized
+        return;
+    }
+    pluginDir = app.getPath('userData') + '/plugins';
+
+    wss = new WebSocket.WebSocketServer({
+        port: 1337,
+        perMessageDeflate: false
+    });
+
+
+    wss.on('connection', function connection(ws) {
+        ws.on('message', function message(dataString) {
+            const data = JSON.parse(dataString);
+            console.log('received: %s', data);
+
+            if (data.type == 'request' && operations[data.operation]) {
+                const operation = operations[data.operation];
+                operation(ws, data);
+                return;
+            }
+
+            ws.send(JSON.stringify({
+                type: 'error',
+                ref: data.ref,
+                message: `Unknown operation '${data.type}:${data.operation}'`
+            }));
+
+        });
+    });
+
+}
+
+
+module.exports = {
+    initServer
+}
